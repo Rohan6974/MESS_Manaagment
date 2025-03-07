@@ -4,6 +4,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const AuthRoutes  = require("./Routes/AuthRoutes")
 const AdminRoutes  = require("./Routes/AdminRoutes")
+const OrderRoutes = require("./Routes/OrderRoutes")
+
 const connectDatabase = require('./DB');
 connectDatabase();
 dotenv.config();
@@ -20,6 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use("/api", AuthRoutes)
 app.use("/admin" , AdminRoutes)
+app.use("/api/order",OrderRoutes)
 
 app.listen(port, () => {
     console.log(`http://localhost:${port}`);
