@@ -1,7 +1,7 @@
 const express = require('express');
-const { placeOrder, getOrders, createOrder, verifyPayment } = require("../Controller/OrderController");
-const { verifyToken } = require('../config/verifyToken');
-const { sendNotificationToAdmin } = require('../utils/notificationService');
+const { placeOrder, getOrders, createOrder, verifyPayment, verifyAndExpireQRCode } = require("../Controller/OrderController");
+const { verifyToken } = require('../Middleware/verifyToken');
+//const { sendNotificationToAdmin } = require('../utils/notificationService');
 
 const router = express.Router();
 
@@ -27,5 +27,8 @@ router.post('/order', createOrder);
 
 // Verify payment and generate QR code
 router.post('/payment/verify', verifyPayment);
+
+// Verify and expire QR code
+router.post('/qr/verify', verifyAndExpireQRCode);
 
 module.exports = router;
