@@ -2,11 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Waste = require('../Schemas/Waste');
 const twilio = require('twilio');
-const config = require('../Config/Config');
-const dotenv = require('dotenv');
-dotenv.config();
 
-const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = new twilio("ACc898e331a4c7576e837edfb897f73c00", "642886cf65864e7af04847d5f4aa89fc");
 
 // Store the latest quantity in memory (Temporary storage)
 let latestQuantity = 0;
@@ -30,8 +27,8 @@ router.post('/', async (req, res) => {
     // Make automated call using ngrok URL
     const call = await client.calls.create({
       url: "http://localhost:9898/api/waste/twiml",
-      to: process.env.RECIPIENT_PHONE_NUMBER,
-      from: process.env.TWILIO_PHONE_NUMBER
+      to: "+19137044714",
+      from: "+916352091654"
     });
 
     res.json({ message: 'Call initiated', callSid: call.sid });
