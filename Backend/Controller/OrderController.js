@@ -9,7 +9,7 @@ const razorpay = new Razorpay({
   key_secret: "mI2uV0FAHVv1mVVZ7PxUIXot",
 });
 
-const placeOrder = async (req, res) => {
+exports.placeOrder = async (req, res) => {
   try {
     const newOrder = new Order({
       userId: req.user.id,
@@ -23,7 +23,7 @@ const placeOrder = async (req, res) => {
   }
 };
 
-const getOrders = async (req, res) => {
+exports.getOrders = async (req, res) => {
   try {
     const orders = await Order.find({ userId: req.user.id });
     res.status(200).json(orders);
@@ -32,23 +32,7 @@ const getOrders = async (req, res) => {
   }
 };
 
-const createOrder = async (req, res) => {
-  const { amount, currency = "INR", receipt = "receipt#1" } = req.body;
-
-  const options = {
-    amount: amount * 100, // Amount in paise
-    currency,
-    receipt,
-  };
-  try {
-    const order = await razorpay.orders.create(options);
-    res.send({ orderId: order.id });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-};
-
-const verifyPayment = async (req, res) => {
+exports.verifyPayment = async (req, res) => {
   const { orderId, paymentId, signature } = req.body;
 
   const body = orderId + "|" + paymentId;
@@ -73,7 +57,7 @@ const verifyPayment = async (req, res) => {
   }
 };
 
-const verifyAndExpireQRCode = async (req, res) => {
+exports.verifyAndExpireQRCode = async (req, res) => {
   try {
     const { qrCode } = req.body;
     const orderId = await verifyQRCode(qrCode);
@@ -95,10 +79,3 @@ const verifyAndExpireQRCode = async (req, res) => {
   }
 };
 
-module.exports = {
-  placeOrder,
-  getOrders,
-  createOrder,
-  verifyPayment,
-  verifyAndExpireQRCode
-};
