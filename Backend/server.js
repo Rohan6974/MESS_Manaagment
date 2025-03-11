@@ -28,21 +28,6 @@ app.use('/api/waste', wasteRoutes);
 // app.use("/api/order",OrderRoutes)
 
 
-app.get('/twiml', (req, res) => {
-    const universityName = "XYZ University";
-  
-    const twimlResponse = `
-      <Response>
-        <Say voice="alice">
-          This is an automated message from ${universityName}. 
-          The available food quantity is ${latestQuantity} kilograms.
-        </Say>
-      </Response>
-    `;
-  
-    res.set('Content-Type', 'text/xml');
-    res.send(twimlResponse);
-  });
   
 
 
