@@ -1,6 +1,6 @@
 const Order = require("../Schemas/Order");
-//const { generateQRCode, verifyQRCode } = require('../utils/qrCodeGenerator');
-//const { verifyPaymentStatus } = require('../utils/paymentService');
+const { generateQRCode, verifyQRCode } = require('../utils/qrCodeGenerator');
+const { verifyPaymentStatus } = require('../utils/paymentService');
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -75,7 +75,7 @@ exports.verifyAndExpireQRCode = async (req, res) => {
       res.status(400).json({ message: 'Invalid QR code' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Failed to verify QR code', error });
+    res.status (500).json({ message: 'Failed to verify QR code', error });
   }
 };
 

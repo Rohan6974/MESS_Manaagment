@@ -1,7 +1,7 @@
 const express = require('express');
 const { placeOrder, getOrders, verifyPayment, verifyAndExpireQRCode } = require("../Controller/OrderController");
 const { verifyToken } = require('../Middleware/verifyToken');
-//const { sendNotificationToAdmin } = require('../utils/notificationService');
+const { sendNotificationToAdmin } = require('../utils/notificationService');
 
 const router = express.Router();
 
