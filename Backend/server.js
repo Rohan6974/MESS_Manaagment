@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 const AuthRoutes  = require("./Routes/AuthRoutes")
 const AdminRoutes  = require("./Routes/AdminRoutes")
 const wasteRoutes = require('./Routes/WasteRoutes');
-// const OrderRoutes = require("./Routes/OrderRoutes")
+const OrderRoutes = require("./Routes/OrderRoutes")
 
 
 const connectDatabase = require('./DB');
@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use("/api", AuthRoutes)
 app.use("/admin" , AdminRoutes)
 app.use('/api/waste', wasteRoutes);
-// app.use("/api/order",OrderRoutes)
+app.use("/api/order", OrderRoutes)
 
 
   

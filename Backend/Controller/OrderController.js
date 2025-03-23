@@ -1,39 +1,42 @@
-const Order = require("../Schemas/Order");
-const { generateQRCode, verifyQRCode } = require('../utils/qrCodeGenerator');
-const { verifyPaymentStatus } = require('../utils/paymentService');
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
-
+const DeanAndHOD = require('../Schemas/DeanAndHOD');
+const Order= require('../Schemas/Order');
+const Razorpay = require('razorpay');
+const QRCode = require('qrcode'); // Directly using the qrcode package
+const crypto = require('crypto');
+const {v4: uuidv4} = require('uuid');
+// Razorpay instance
 const razorpay = new Razorpay({
-  key_id: "rzp_test_g3ezQExpMD4bv6",
-  key_secret: "mI2uV0FAHVv1mVVZ7PxUIXot",
-});
+    key_id: "rzp_test_g3ezQExpMD4bv6",
+    key_secret: "mI2uV0FAHVv1mVVZ7PxUIXot",
+  });
 
-exports.placeOrder = async (req, res) => {
-  try {
-    const newOrder = new Order({
-      userId: req.user.id,
-      items: req.body.items,
-      totalAmount: req.body.totalAmount,
-    });
-    const savedOrder = await newOrder.save();
-    res.status(201).json(savedOrder);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to place order", error });
-  }
+// Create a new meal order
+exports.createOrder = async (req, res) => {
+    try {
+        const { amount, role } = req.body;
+
+        // If the user is a dean or HOD, skip payment and QR generation
+        if (role === DeanAndHOD ) {
+            return res.status(200).json({ message: 'Order placed successfully. No QR required.' });
+        }
+
+        // Create Razorpay order
+        const options = {
+            amount: amount * 100, // Amount in paise
+            currency: 'INR',
+            receipt: `receipt_${Date.now()}`,
+        };
+        const order = await razorpay.orders.create(options);
+        res.send({ orderId: order.id });
+        res.status(200).json({ orderId: order.id, amount: options.amount });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to create order' });
+    }
 };
 
-exports.getOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({ userId: req.user.id });
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to get orders", error });
-  }
-};
-
+// Verify payment and generate QR code
 exports.verifyPayment = async (req, res) => {
-  const { orderId, paymentId, signature } = req.body;
+  const { orderId, paymentId, signature, ticketDetails } = req.body;
 
   const body = orderId + "|" + paymentId;
   const expectedSignature = crypto
@@ -43,39 +46,25 @@ exports.verifyPayment = async (req, res) => {
 
   if (expectedSignature === signature) {
     try {
-      const order = await Order.findById(orderId);
-      order.status = 'Paid';
+      const qrCodeData = await QRCode.toDataURL(JSON.stringify(ticketDetails));
+
+      // Save order details to the database
+      const order = new Order({
+        orderId,
+        paymentId,
+        ticketDetails,
+        qrCode: qrCodeData,
+        status: "Paid",
+      });
+
       await order.save();
 
-      const qrCode = await generateQRCode(orderId);
-      res.status(200).json({ message: 'Payment verified', qrCode });
+      res.send({ success: true, qrCode: qrCodeData });
     } catch (error) {
-      res.status(500).json({ message: 'Failed to verify payment', error });
+      res.status(500).send({ success: false, error: error.message });
     }
   } else {
-    res.status(400).json({ message: 'Invalid payment details' });
-  }
-};
-
-exports.verifyAndExpireQRCode = async (req, res) => {
-  try {
-    const { qrCode } = req.body;
-    const orderId = await verifyQRCode(qrCode);
-
-    if (orderId) {
-      const order = await Order.findById(orderId);
-      if (order && order.status === 'Paid') {
-        order.status = 'Completed';
-        await order.save();
-        res.status(200).json({ message: 'QR code verified and order completed' });
-      } else {
-        res.status(400).json({ message: 'Invalid or expired QR code' });
-      }
-    } else {
-      res.status(400).json({ message: 'Invalid QR code' });
-    }
-  } catch (error) {
-    res.status (500).json({ message: 'Failed to verify QR code', error });
+    res.send({ success: false, message: "Invalid signature" });
   }
 };
 
